@@ -22,22 +22,6 @@ class TicTacToeTest extends PHPUnit_Framework_TestCase {
     /**
      * @test
      */
-    public function AllMarksSet_GameIsFinished()
-    {
-        $this->markTestIncomplete();
-        $game = new TicTacToe();
-
-
-        $game->putMark(TicTacToe::O, 1, 1); $game->putMark(TicTacToe::O, 2, 1); $game->putMark(TicTacToe::X, 3, 1);
-        $game->putMark(TicTacToe::X, 1, 2); $game->putMark(TicTacToe::X, 2, 2); $game->putMark(TicTacToe::O, 3, 2);
-        $game->putMark(TicTacToe::O, 1, 3); $game->putMark(TicTacToe::X, 2, 3); $game->putMark(TicTacToe::X, 3, 3);
-
-        $this->assertGameIsFinished();
-    }
-
-    /**
-     * @test
-     */
     public function putMark_X_MarkShouldBeSet()
     {
         $this->game->putMark(TicTacToe::X, 1, 1);
@@ -85,6 +69,16 @@ class TicTacToeTest extends PHPUnit_Framework_TestCase {
         $this->assertGameNotFinished();
     }
 
+    /**
+     * @test
+     */
+    public function isFinished_SecondRowFilledWithX_GameIsFinished()
+    {
+        $this->game->putMark(TicTacToe::X, 1, 2); $this->game->putMark(TicTacToe::X, 2, 2); $this->game->putMark(TicTacToe::X, 3, 2);
+
+        $this->assertGameIsFinished();
+    }
+
 
     private function drawGame()
     {
@@ -102,7 +96,6 @@ class TicTacToeTest extends PHPUnit_Framework_TestCase {
     {
         $this->assertSame(true, $this->game->isFinished());
     }
-
 }
 
 class TicTacToe {
@@ -122,7 +115,7 @@ class TicTacToe {
             return true;
         }
 
-        if ($this->hasSameInFirstRow()) {
+        if ($this->oneOfRowsHasSameMarks()) {
             return true;
         }
 
@@ -144,30 +137,58 @@ class TicTacToe {
      */
     private function fieldIsFull()
     {
-        $markCount = 0;
-        array_walk_recursive($this->field, function ($item) use (&$markCount) {
-            if ($item !== self::NONE) {
-                $markCount++;
+        $hasEmptyPosition = false;
+        array_walk_recursive($this->field, function ($item) use (&$hasEmptyPosition) {
+            if ($item === self::NONE) {
+                $hasEmptyPosition = true;
             }
         }, 0);
 
-        return $markCount === 9;
+        return !$hasEmptyPosition;
     }
 
     /**
      * @return bool
      */
-    private function hasSameInFirstRow()
+    private function hasSameSymbolsInRow($row)
     {
         $result = true;
-        $prev = $this->field[0][0];
-        for ($i = 1; $i < 3; $i++) {
-            $current = $this->field[$i][0];
+        $prev = $this->field[0][$row];
+        for ($i = 1; $i < $this->getColumnCount(); $i++) {
+            $current = $this->field[$i][$row];
             $result = $result && $current === $prev && $current !== self::NONE;
-            $prev = $this->field[$i][0];
+            $prev = $this->field[$i][$row];
         }
 
         return $result;
+    }
+
+    /**
+     * @return bool
+     */
+    private function oneOfRowsHasSameMarks()
+    {
+        $result = false;
+        for ($i = 0; $i < $this->getRowCount(); $i++) {
+            $result = $result || $this->hasSameSymbolsInRow($i);
+        }
+        return $result;
+    }
+
+    /**
+     * @return int
+     */
+    private function getRowCount()
+    {
+        return 3;
+    }
+
+    /**
+     * @return int
+     */
+    private function getColumnCount()
+    {
+        return 3;
     }
 
 }
