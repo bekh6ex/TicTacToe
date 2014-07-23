@@ -16,7 +16,7 @@ class TicTacToeTest extends PHPUnit_Framework_TestCase {
      */
     public function createGame_GameIsNotFinished()
     {
-        $this->assertSame(false, $this->game->isFinished());
+        $this->assertGameNotFinished();
     }
 
     /**
@@ -32,7 +32,7 @@ class TicTacToeTest extends PHPUnit_Framework_TestCase {
         $game->putMark(TicTacToe::X, 1, 2); $game->putMark(TicTacToe::X, 2, 2); $game->putMark(TicTacToe::O, 3, 2);
         $game->putMark(TicTacToe::O, 1, 3); $game->putMark(TicTacToe::X, 2, 3); $game->putMark(TicTacToe::X, 3, 3);
 
-        $this->assertSame(true, $this->game->isFinished());
+        $this->assertGameIsFinished();
     }
 
     /**
@@ -52,7 +52,7 @@ class TicTacToeTest extends PHPUnit_Framework_TestCase {
     {
         $this->drawGame();
 
-        $this->assertEquals(true, $this->game->isFinished());
+        $this->assertGameIsFinished();
     }
 
     /**
@@ -62,7 +62,7 @@ class TicTacToeTest extends PHPUnit_Framework_TestCase {
     {
         $this->game->putMark(TicTacToe::X, 1, 1); $this->game->putMark(TicTacToe::X, 2, 1); $this->game->putMark(TicTacToe::X, 3, 1);
 
-        $this->assertEquals(true, $this->game->isFinished());
+        $this->assertGameIsFinished();
     }
 
     /**
@@ -72,7 +72,17 @@ class TicTacToeTest extends PHPUnit_Framework_TestCase {
     {
         $this->game->putMark(TicTacToe::O, 1, 1); $this->game->putMark(TicTacToe::O, 2, 1); $this->game->putMark(TicTacToe::O, 3, 1);
 
-        $this->assertEquals(true, $this->game->isFinished());
+        $this->assertGameIsFinished();
+    }
+
+    /**
+     * @test
+     */
+    public function isFinished_FirstRowFilledWithDifferentMarks_GameIsNotFinished()
+    {
+        $this->game->putMark(TicTacToe::O, 1, 1); $this->game->putMark(TicTacToe::X, 2, 1); $this->game->putMark(TicTacToe::O, 3, 1);
+
+        $this->assertGameNotFinished();
     }
 
 
@@ -83,13 +93,23 @@ class TicTacToeTest extends PHPUnit_Framework_TestCase {
         $this->game->putMark(TicTacToe::X, 1,3); $this->game->putMark(TicTacToe::O, 2,3); $this->game->putMark(TicTacToe::X, 3,3);
     }
 
+    private function assertGameNotFinished()
+    {
+        $this->assertEquals(false, $this->game->isFinished());
+    }
+
+    private function assertGameIsFinished()
+    {
+        $this->assertSame(true, $this->game->isFinished());
+    }
+
 }
 
 class TicTacToe {
 
     const O = 'o';
     const X = 'x';
-    const NONE = null;
+    const NONE = 'empty';
     private $field = [
         [self::NONE, self::NONE, self::NONE],
         [self::NONE, self::NONE, self::NONE],
@@ -102,11 +122,7 @@ class TicTacToe {
             return true;
         }
 
-        if (
-            $this->field[0][0] !== self::NONE &&
-            $this->field[1][0] !== self::NONE &&
-            $this->field[2][0] !== self::NONE
-        ) {
+        if ($this->hasSameInFirstRow()) {
             return true;
         }
 
@@ -130,12 +146,28 @@ class TicTacToe {
     {
         $markCount = 0;
         array_walk_recursive($this->field, function ($item) use (&$markCount) {
-            if ($item) {
+            if ($item !== self::NONE) {
                 $markCount++;
             }
         }, 0);
 
         return $markCount === 9;
+    }
+
+    /**
+     * @return bool
+     */
+    private function hasSameInFirstRow()
+    {
+        $result = true;
+        $prev = $this->field[0][0];
+        for ($i = 1; $i < 3; $i++) {
+            $current = $this->field[$i][0];
+            $result = $result && $current === $prev && $current !== self::NONE;
+            $prev = $this->field[$i][0];
+        }
+
+        return $result;
     }
 
 }
