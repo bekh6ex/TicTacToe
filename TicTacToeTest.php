@@ -65,6 +65,16 @@ class TicTacToeTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals(true, $this->game->isFinished());
     }
 
+    /**
+     * @test
+     */
+    public function isFinished_ThreeOInAFirstRow_GameIsFinished()
+    {
+        $this->game->putMark(TicTacToe::O, 1, 1); $this->game->putMark(TicTacToe::O, 2, 1); $this->game->putMark(TicTacToe::O, 3, 1);
+
+        $this->assertEquals(true, $this->game->isFinished());
+    }
+
 
     private function drawGame()
     {
@@ -93,9 +103,9 @@ class TicTacToe {
         }
 
         if (
-            $this->field[0][0] === self::X &&
-            $this->field[1][0] === self::X &&
-            $this->field[2][0] === self::X
+            $this->field[0][0] !== self::NONE &&
+            $this->field[1][0] !== self::NONE &&
+            $this->field[2][0] !== self::NONE
         ) {
             return true;
         }
