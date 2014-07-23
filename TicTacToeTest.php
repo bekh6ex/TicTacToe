@@ -48,7 +48,7 @@ class TicTacToeTest extends PHPUnit_Framework_TestCase {
     /**
      * @test
      */
-    public function putMark_FullField_GameIsFinished()
+    public function isFinished_FullField_GameIsFinished()
     {
         $this->drawGame();
 
@@ -56,12 +56,15 @@ class TicTacToeTest extends PHPUnit_Framework_TestCase {
     }
 
     /**
-     * @return TicTacToe
+     * @test
      */
-    private function createGame()
+    public function isFinished_ThreeXInAFirstRow_GameIsFinished()
     {
-        return new TicTacToe();
+        $this->game->putMark(TicTacToe::X, 1, 1); $this->game->putMark(TicTacToe::X, 2, 1); $this->game->putMark(TicTacToe::X, 3, 1);
+
+        $this->assertEquals(true, $this->game->isFinished());
     }
+
 
     private function drawGame()
     {
@@ -77,11 +80,23 @@ class TicTacToe {
     const O = 'o';
     const X = 'x';
     const NONE = null;
-    private $field = [];
+    private $field = [
+        [self::NONE, self::NONE, self::NONE],
+        [self::NONE, self::NONE, self::NONE],
+        [self::NONE, self::NONE, self::NONE],
+    ];
 
     public function isFinished()
     {
         if ($this->fieldIsFull()) {
+            return true;
+        }
+
+        if (
+            $this->field[0][0] === self::X &&
+            $this->field[1][0] === self::X &&
+            $this->field[2][0] === self::X
+        ) {
             return true;
         }
 
@@ -105,7 +120,9 @@ class TicTacToe {
     {
         $markCount = 0;
         array_walk_recursive($this->field, function ($item) use (&$markCount) {
-            $markCount++;
+            if ($item) {
+                $markCount++;
+            }
         }, 0);
 
         return $markCount === 9;
