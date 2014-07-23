@@ -91,6 +91,18 @@ class TicTacToeTest extends PHPUnit_Framework_TestCase {
         $this->assertGameIsFinished();
     }
 
+    /**
+     * @test
+     */
+    public function isFinished_SecondColumnWithX_GameIsFinished()
+    {
+        $this->game->putMark(TicTacToe::X, 2, 1);
+        $this->game->putMark(TicTacToe::X, 2, 2);
+        $this->game->putMark(TicTacToe::X, 2, 3);
+
+        $this->assertGameIsFinished();
+    }
+
 
     private function drawGame()
     {
@@ -127,7 +139,7 @@ class TicTacToe {
             return true;
         }
 
-        if ($this->oneOfRowsHasSameMarks() || $this->firstColumnHasSameMarks()) {
+        if ($this->oneOfRowsHasSameMarks() || $this->oneOfColumnsHasSameMarks()) {
             return true;
         }
 
@@ -162,21 +174,23 @@ class TicTacToe {
     /**
      * @return bool
      */
-    private function hasSameSymbolsInRow($rowIndex)
+    private function oneOfRowsHasSameMarks()
     {
-        $row = $this->getRow($rowIndex);
-
-        return $this->areSameSymbolsAndSet($row);
+        $result = false;
+        for ($i = 0; $i < $this->getRowCount(); $i++) {
+            $result = $result || $this->areSameSymbolsAndSet($this->getRow($i));
+        }
+        return $result;
     }
 
     /**
      * @return bool
      */
-    private function oneOfRowsHasSameMarks()
+    private function oneOfColumnsHasSameMarks()
     {
         $result = false;
         for ($i = 0; $i < $this->getRowCount(); $i++) {
-            $result = $result || $this->hasSameSymbolsInRow($i);
+            $result = $result || $this->areSameSymbolsAndSet($this->getColumn($i));
         }
         return $result;
     }
@@ -195,11 +209,6 @@ class TicTacToe {
     private function getColumnCount()
     {
         return 3;
-    }
-
-    private function firstColumnHasSameMarks()
-    {
-        return $this->areSameSymbolsAndSet($this->getColumn(0));
     }
 
     /**
