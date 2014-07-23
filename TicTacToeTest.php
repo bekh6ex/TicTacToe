@@ -38,7 +38,7 @@ class TicTacToeTest extends PHPUnit_Framework_TestCase {
     /**
      * @test
      */
-    public function putMarkX_MarkShouldBeSet()
+    public function putMark_X_MarkShouldBeSet()
     {
         $this->game->putMark(TicTacToe::X, 1, 1);
 
@@ -48,11 +48,11 @@ class TicTacToeTest extends PHPUnit_Framework_TestCase {
     /**
      * @test
      */
-    public function putMark_()
+    public function putMark_FullField_GameIsFinished()
     {
-        $this->markTestIncomplete();
-//        $this->game->putMark();
+        $this->drawGame();
 
+        $this->assertEquals(true, $this->game->isFinished());
     }
 
     /**
@@ -63,6 +63,13 @@ class TicTacToeTest extends PHPUnit_Framework_TestCase {
         return new TicTacToe();
     }
 
+    private function drawGame()
+    {
+        $this->game->putMark(TicTacToe::O, 1,1); $this->game->putMark(TicTacToe::X, 2,1); $this->game->putMark(TicTacToe::O, 3,1);
+        $this->game->putMark(TicTacToe::O, 1,2); $this->game->putMark(TicTacToe::X, 2,2); $this->game->putMark(TicTacToe::X, 3,2);
+        $this->game->putMark(TicTacToe::X, 1,3); $this->game->putMark(TicTacToe::O, 2,3); $this->game->putMark(TicTacToe::X, 3,3);
+    }
+
 }
 
 class TicTacToe {
@@ -70,14 +77,14 @@ class TicTacToe {
     const O = 'o';
     const X = 'x';
     const NONE = null;
-    private $field = [
-        [self::NONE, self::NONE, self::NONE],
-        [self::NONE, self::NONE, self::NONE],
-        [self::NONE, self::NONE, self::NONE],
-    ];
+    private $field = [];
 
     public function isFinished()
     {
+        if ($this->fieldIsFull()) {
+            return true;
+        }
+
         return false;
     }
 
@@ -89,6 +96,19 @@ class TicTacToe {
     public function getPositionStatus($posX, $posY)
     {
         return $this->field[$posX-1][$posY-1];
+    }
+
+    /**
+     * @return bool
+     */
+    private function fieldIsFull()
+    {
+        $markCount = 0;
+        array_walk_recursive($this->field, function ($item) use (&$markCount) {
+            $markCount++;
+        }, 0);
+
+        return $markCount === 9;
     }
 
 }
