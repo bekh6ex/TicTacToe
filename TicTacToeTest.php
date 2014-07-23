@@ -79,6 +79,18 @@ class TicTacToeTest extends PHPUnit_Framework_TestCase {
         $this->assertGameIsFinished();
     }
 
+    /**
+     * @test
+     */
+    public function isFinished_FirstColumnWithX_GameIsFinished()
+    {
+        $this->game->putMark(TicTacToe::X, 1, 1);
+        $this->game->putMark(TicTacToe::X, 1, 2);
+        $this->game->putMark(TicTacToe::X, 1, 3);
+
+        $this->assertGameIsFinished();
+    }
+
 
     private function drawGame()
     {
@@ -115,7 +127,7 @@ class TicTacToe {
             return true;
         }
 
-        if ($this->oneOfRowsHasSameMarks()) {
+        if ($this->oneOfRowsHasSameMarks() || $this->firstColumnHasSameMarks()) {
             return true;
         }
 
@@ -150,17 +162,11 @@ class TicTacToe {
     /**
      * @return bool
      */
-    private function hasSameSymbolsInRow($row)
+    private function hasSameSymbolsInRow($rowIndex)
     {
-        $result = true;
-        $prev = $this->field[0][$row];
-        for ($i = 1; $i < $this->getColumnCount(); $i++) {
-            $current = $this->field[$i][$row];
-            $result = $result && $current === $prev && $current !== self::NONE;
-            $prev = $this->field[$i][$row];
-        }
+        $row = $this->getRow($rowIndex);
 
-        return $result;
+        return $this->areSameSymbolsAndSet($row);
     }
 
     /**
@@ -189,6 +195,46 @@ class TicTacToe {
     private function getColumnCount()
     {
         return 3;
+    }
+
+    private function firstColumnHasSameMarks()
+    {
+        return $this->areSameSymbolsAndSet($this->getColumn(0));
+    }
+
+    /**
+     * @param array $symbols
+     * @return bool
+     */
+    private function areSameSymbolsAndSet(array $symbols)
+    {
+        $result = true;
+        $prev = $symbols[0];
+        for ($i = 1; $i < $this->getColumnCount(); $i++) {
+            $current = $symbols[$i];
+            $result = $result && $current === $prev && $current !== self::NONE;
+            $prev = $symbols[$i];
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param $rowIndex
+     * @return array
+     */
+    private function getRow($rowIndex)
+    {
+        return array_column($this->field, $rowIndex);
+    }
+
+    /**
+     * @param $index
+     * @return mixed
+     */
+    private function getColumn($index)
+    {
+        return $this->field[$index];
     }
 
 }
