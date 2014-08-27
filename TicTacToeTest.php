@@ -178,7 +178,7 @@ class TicTacToe {
     {
         $result = false;
         for ($i = 0; $i < $this->getRowCount(); $i++) {
-            $result = $result || $this->areSameSymbolsAndSet($this->getRow($i));
+            $result = $result || $this->areSetAndSame($this->getRow($i));
         }
         return $result;
     }
@@ -190,7 +190,7 @@ class TicTacToe {
     {
         $result = false;
         for ($i = 0; $i < $this->getRowCount(); $i++) {
-            $result = $result || $this->areSameSymbolsAndSet($this->getColumn($i));
+            $result = $result || $this->areSetAndSame($this->getColumn($i));
         }
         return $result;
     }
@@ -212,17 +212,17 @@ class TicTacToe {
     }
 
     /**
-     * @param array $symbols
+     * @param array $marks
      * @return bool
      */
-    private function areSameSymbolsAndSet(array $symbols)
+    private function areSetAndSame(array $marks)
     {
         $result = true;
-        $prev = $symbols[0];
+        $prev = $marks[0];
         for ($i = 1; $i < $this->getColumnCount(); $i++) {
-            $current = $symbols[$i];
+            $current = $marks[$i];
             $result = $result && $current === $prev && $current !== self::NONE;
-            $prev = $symbols[$i];
+            $prev = $marks[$i];
         }
 
         return $result;
@@ -245,5 +245,4 @@ class TicTacToe {
     {
         return $this->field[$index];
     }
-
 }
