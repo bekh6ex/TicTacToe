@@ -127,15 +127,24 @@ class TicTacToe {
     const O = 'o';
     const X = 'x';
     const NONE = 'empty';
+    const FIELD_SIZE = 3;
+    /**
+     * @var GameField
+     */
     private $field = [
         [self::NONE, self::NONE, self::NONE],
         [self::NONE, self::NONE, self::NONE],
         [self::NONE, self::NONE, self::NONE],
     ];
 
+    public function __construct()
+    {
+        $this->field = new GameField();
+    }
+
     public function isFinished()
     {
-        if ($this->fieldIsFull()) {
+        if ($this->field->fieldIsFull()) {
             return true;
         }
 
@@ -148,18 +157,84 @@ class TicTacToe {
 
     public function putMark($mark, $posX, $posY)
     {
-        $this->field[$posX-1][$posY-1] = $mark;
+        $this->field->set($posX, $posY, $mark);
     }
 
     public function getPositionStatus($posX, $posY)
     {
-        return $this->field[$posX-1][$posY-1];
+        return $this->field->get($posX, $posY);
+    }
+
+
+    /**
+     * @return bool
+     */
+    private function oneOfRowsHasSameMarks()
+    {
+        $result = false;
+        for ($i = 1; $i <= $this->field->getRowCount(); $i++) {
+            $result = $result || $this->areSetAndSame($this->field->getRow($i));
+        }
+        return $result;
     }
 
     /**
      * @return bool
      */
-    private function fieldIsFull()
+    private function oneOfColumnsHasSameMarks()
+    {
+        $result = false;
+        for ($i = 1; $i <= $this->field->getColumnCount(); $i++) {
+            $result = $result || $this->areSetAndSame($this->field->getColumn($i));
+        }
+        return $result;
+    }
+
+    /**
+     * @param array $marks
+     * @return bool
+     */
+    private function areSetAndSame(array $marks)
+    {
+        $result = true;
+        $prev = $marks[0];
+        for ($i = 1; $i < self::FIELD_SIZE; $i++) {
+            $current = $marks[$i];
+            $result = $result && $current === $prev && $current !== self::NONE;
+            $prev = $marks[$i];
+        }
+
+        return $result;
+    }
+}
+
+class GameField
+{
+    const O = 'o';
+    const X = 'x';
+    const NONE = 'empty';
+
+    private $rowCount = 3;
+    private $columnCount = 3;
+
+    private $field = [];
+
+    public function __construct()
+    {
+        $width = $this->columnCount;
+        $height = $this->rowCount;
+        for ($y = 1; $y <= $height; ++$y) {
+            $this->field[$y] = [];
+            for ($x = 1; $x <= $width; ++$x) {
+                $this->field[$y][$x] = self::NONE;
+            }
+        }
+    }
+
+    /**
+     * @return bool
+     */
+    public function fieldIsFull()
     {
         $hasEmptyPosition = false;
         array_walk_recursive($this->field, function ($item) use (&$hasEmptyPosition) {
@@ -171,78 +246,39 @@ class TicTacToe {
         return !$hasEmptyPosition;
     }
 
-    /**
-     * @return bool
-     */
-    private function oneOfRowsHasSameMarks()
+    public function get($x, $y)
     {
-        $result = false;
-        for ($i = 0; $i < $this->getRowCount(); $i++) {
-            $result = $result || $this->areSetAndSame($this->getRow($i));
-        }
-        return $result;
+        return $this->field[$y][$x];
     }
 
-    /**
-     * @return bool
-     */
-    private function oneOfColumnsHasSameMarks()
+    public function set($x, $y, $symbol)
     {
-        $result = false;
-        for ($i = 0; $i < $this->getRowCount(); $i++) {
-            $result = $result || $this->areSetAndSame($this->getColumn($i));
-        }
-        return $result;
+        $this->field[$y][$x] = $symbol;
+    }
+
+    public function getRow($y)
+    {
+        return array_values($this->field[$y]);
+    }
+
+    public function getColumn($x)
+    {
+        return array_values(array_column($this->field, $x));
     }
 
     /**
      * @return int
      */
-    private function getRowCount()
+    public function getRowCount()
     {
-        return 3;
+        return $this->rowCount;
     }
 
     /**
      * @return int
      */
-    private function getColumnCount()
+    public function getColumnCount()
     {
-        return 3;
-    }
-
-    /**
-     * @param array $marks
-     * @return bool
-     */
-    private function areSetAndSame(array $marks)
-    {
-        $result = true;
-        $prev = $marks[0];
-        for ($i = 1; $i < $this->getColumnCount(); $i++) {
-            $current = $marks[$i];
-            $result = $result && $current === $prev && $current !== self::NONE;
-            $prev = $marks[$i];
-        }
-
-        return $result;
-    }
-
-    /**
-     * @param $rowIndex
-     * @return array
-     */
-    private function getRow($rowIndex)
-    {
-        return array_column($this->field, $rowIndex);
-    }
-
-    /**
-     * @param $index
-     * @return mixed
-     */
-    private function getColumn($index)
-    {
-        return $this->field[$index];
+        return $this->columnCount;
     }
 }
