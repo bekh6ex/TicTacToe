@@ -139,6 +139,31 @@ class TicTacToeTest extends PHPUnit_Framework_TestCase
         $this->game->putMark(TicTacToe::X, 1, 1);
     }
 
+    /**
+     * @test
+     */
+    public function isFinished_SameMarksInDiagonal_GameIsFinished()
+    {
+        $this->game->putMark(TicTacToe::X, 1, 1); $this->game->putMark(TicTacToe::O, 2, 1);
+                                                  $this->game->putMark(TicTacToe::X, 2, 2); $this->game->putMark(TicTacToe::O, 3, 2);
+                                                                                            $this->game->putMark(TicTacToe::X, 3, 3);
+
+        $this->assertGameIsFinished();
+    }
+
+    /**
+     * @test
+     */
+    public function isFinished_SameMarksInAnotherDiagonal_GameIsFinished()
+    {
+                                                                                            $this->game->putMark(TicTacToe::X, 3, 1);
+                                                                                            $this->game->putMark(TicTacToe::O, 3, 2);
+                                                  $this->game->putMark(TicTacToe::X, 2, 2);
+                                                  $this->game->putMark(TicTacToe::O, 2, 3);
+        $this->game->putMark(TicTacToe::X, 1, 3);
+
+        $this->assertGameIsFinished();
+    }
 
     private function drawGame()
     {
@@ -176,12 +201,8 @@ class TicTacToe
     /**
      * @var GameField
      */
-    private $field = [
-        [self::NONE, self::NONE, self::NONE],
-        [self::NONE, self::NONE, self::NONE],
-        [self::NONE, self::NONE, self::NONE],
-    ];
-    private $prevMark;
+    private $field = [];
+    private $previousMark;
 
     public function __construct()
     {
@@ -194,7 +215,7 @@ class TicTacToe
             return true;
         }
 
-        if ($this->oneOfRowsHasSameMarks() || $this->oneOfColumnsHasSameMarks()) {
+        if ($this->oneOfRowsHasSameMarks() || $this->oneOfColumnsHasSameMarks() || $this->oneOfDiagonalsHasSameMarks()) {
             return true;
         }
 
@@ -209,11 +230,11 @@ class TicTacToe
      */
     public function putMark($mark, $posX, $posY)
     {
-        if ($this->prevMark == $mark) {
+        if ($this->previousMark == $mark) {
             throw new TurnOrderException;
         }
         $this->field->set($posX, $posY, $mark);
-        $this->prevMark = $mark;
+        $this->previousMark = $mark;
     }
 
     public function getPositionStatus($posX, $posY)
@@ -232,6 +253,11 @@ class TicTacToe
         }
 
         return $result;
+    }
+
+    private function oneOfDiagonalsHasSameMarks()
+    {
+        return $this->areSetAndSame($this->field->getDiagonal1()) || $this->areSetAndSame($this->field->getDiagonal2());
     }
 
     /**
@@ -331,6 +357,26 @@ class GameField
     {
         return array_values(array_column($this->field, $x));
     }
+
+    public function getDiagonal1()
+    {
+        return [
+            $this->field[1][1],
+            $this->field[2][2],
+            $this->field[3][3],
+        ];
+    }
+
+    public function getDiagonal2()
+    {
+        return [
+            $this->field[1][3],
+            $this->field[2][2],
+            $this->field[3][1],
+        ];
+    }
+
+
 
     /**
      * @return int
