@@ -165,6 +165,28 @@ class TicTacToeTest extends PHPUnit_Framework_TestCase
         $this->assertGameIsFinished();
     }
 
+    /**
+     * @test
+     */
+    public function getWinner_DrawGame_ReturnsDRAW()
+    {
+        $this->markTestIncomplete();
+
+        $this->drawGame();
+
+        $winner = $this->game->getWinner();
+
+        $this->assertEquals(TicTacToe::DRAW, $winner);
+    }
+
+    /**
+     * @test
+     */
+    public function putMark_GameIsFinished_ThrowsGameOverException()
+    {
+        $this->markTestIncomplete();
+    }
+
     private function drawGame()
     {
         $this->game->putMark(TicTacToe::X, 1, 1);
@@ -198,11 +220,15 @@ class TicTacToe
     const X = 'x';
     const NONE = 'empty';
     const FIELD_SIZE = 3;
+    const DRAW = 'DRAW';
+
     /**
      * @var GameField
      */
     private $field = [];
     private $previousMark;
+
+    private $winner = null;
 
     public function __construct()
     {
@@ -211,15 +237,16 @@ class TicTacToe
 
     public function isFinished()
     {
-        if ($this->field->fieldIsFull()) {
+        if ($this->winner !== null) {
             return true;
         }
 
-        if ($this->oneOfRowsHasSameMarks() || $this->oneOfColumnsHasSameMarks() || $this->oneOfDiagonalsHasSameMarks()) {
-            return true;
-        }
+        $this->checkForWinnerInRows();
+        $this->checkForWinnerInColumns();
+        $this->checkForWinnerInDiagonals();
+        $this->checkForDrawGame();
 
-        return false;
+        return $this->winner !== null;
     }
 
     /**
@@ -227,6 +254,7 @@ class TicTacToe
      * @param $posX
      * @param $posY
      * @throws PositionIsNotEmptyException
+     * @throws TurnOrderException
      */
     public function putMark($mark, $posX, $posY)
     {
@@ -242,36 +270,6 @@ class TicTacToe
         return $this->field->get($posX, $posY);
     }
 
-    /**
-     * @return bool
-     */
-    private function oneOfRowsHasSameMarks()
-    {
-        $result = false;
-        for ($i = 1; $i <= $this->field->getRowCount(); $i++) {
-            $result = $result || $this->areSetAndSame($this->field->getRow($i));
-        }
-
-        return $result;
-    }
-
-    private function oneOfDiagonalsHasSameMarks()
-    {
-        return $this->areSetAndSame($this->field->getDiagonal1()) || $this->areSetAndSame($this->field->getDiagonal2());
-    }
-
-    /**
-     * @return bool
-     */
-    private function oneOfColumnsHasSameMarks()
-    {
-        $result = false;
-        for ($i = 1; $i <= $this->field->getColumnCount(); $i++) {
-            $result = $result || $this->areSetAndSame($this->field->getColumn($i));
-        }
-
-        return $result;
-    }
 
     /**
      * @param array $marks
@@ -289,12 +287,70 @@ class TicTacToe
 
         return $result;
     }
+
+    /**
+     * @return void
+     */
+    private function checkForWinnerInRows()
+    {
+        if ($this->winner !== null) {
+            return;
+        }
+
+        for ($i = 1; $i <= $this->field->getRowCount(); $i++) {
+            $marks = $this->field->getRow($i);
+            if ($this->areSetAndSame($marks)) {
+                $this->winner = current($marks);
+            }
+        }
+    }
+
+    private function checkForWinnerInColumns()
+    {
+        if ($this->winner !== null) {
+            return;
+        }
+
+        for ($i = 1; $i <= $this->field->getColumnCount(); $i++) {
+            $marks = $this->field->getColumn($i);
+            if ($this->areSetAndSame($marks)) {
+                $this->winner = current($marks);
+            }
+        }
+    }
+
+    private function checkForWinnerInDiagonals()
+    {
+        if ($this->winner !== null) {
+            return;
+        }
+
+        $diagonals =[
+            $this->field->getDiagonal1(),
+            $this->field->getDiagonal2(),
+        ];
+
+        foreach ($diagonals as $marks) {
+            if ($this->areSetAndSame($marks)) {
+                $this->winner = current($marks);
+            }
+        }
+    }
+
+    private function checkForDrawGame()
+    {
+        if ($this->winner !== null) {
+            return;
+        }
+
+        if ($this->field->fieldIsFull()) {
+            $this->winner = self::DRAW;
+        }
+    }
 }
 
 class GameField
 {
-    const O = 'o';
-    const X = 'x';
     const NONE = 'empty';
 
     private $rowCount = 3;
