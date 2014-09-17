@@ -1,6 +1,7 @@
 <?php
 
-class TicTacToeTest extends PHPUnit_Framework_TestCase {
+class TicTacToeTest extends PHPUnit_Framework_TestCase
+{
     /**
      * @var TicTacToe
      */
@@ -26,7 +27,7 @@ class TicTacToeTest extends PHPUnit_Framework_TestCase {
     {
         $this->game->putMark(TicTacToe::X, 1, 1);
 
-        $this->assertSame(TicTacToe::X, $this->game->getPositionStatus(1,1));
+        $this->assertSame(TicTacToe::X, $this->game->getPositionStatus(1, 1));
     }
 
     /**
@@ -44,7 +45,11 @@ class TicTacToeTest extends PHPUnit_Framework_TestCase {
      */
     public function isFinished_ThreeXInAFirstRow_GameIsFinished()
     {
-        $this->game->putMark(TicTacToe::X, 1, 1); $this->game->putMark(TicTacToe::X, 2, 1); $this->game->putMark(TicTacToe::X, 3, 1);
+        $this->game->putMark(TicTacToe::X, 1, 1);
+        $this->game->putMark(TicTacToe::O, 1, 2);
+        $this->game->putMark(TicTacToe::X, 2, 1);
+        $this->game->putMark(TicTacToe::O, 2, 2);
+        $this->game->putMark(TicTacToe::X, 3, 1);
 
         $this->assertGameIsFinished();
     }
@@ -54,7 +59,12 @@ class TicTacToeTest extends PHPUnit_Framework_TestCase {
      */
     public function isFinished_ThreeOInAFirstRow_GameIsFinished()
     {
-        $this->game->putMark(TicTacToe::O, 1, 1); $this->game->putMark(TicTacToe::O, 2, 1); $this->game->putMark(TicTacToe::O, 3, 1);
+        $this->game->putMark(TicTacToe::X, 3, 3); //Just for first turn
+        $this->game->putMark(TicTacToe::O, 1, 1);
+        $this->game->putMark(TicTacToe::X, 1, 2);
+        $this->game->putMark(TicTacToe::O, 2, 1);
+        $this->game->putMark(TicTacToe::X, 2, 2);
+        $this->game->putMark(TicTacToe::O, 3, 1);
 
         $this->assertGameIsFinished();
     }
@@ -74,7 +84,11 @@ class TicTacToeTest extends PHPUnit_Framework_TestCase {
      */
     public function isFinished_SecondRowFilledWithX_GameIsFinished()
     {
-        $this->game->putMark(TicTacToe::X, 1, 2); $this->game->putMark(TicTacToe::X, 2, 2); $this->game->putMark(TicTacToe::X, 3, 2);
+        $this->game->putMark(TicTacToe::X, 1, 2);
+        $this->game->putMark(TicTacToe::O, 1, 1);
+        $this->game->putMark(TicTacToe::X, 2, 2);
+        $this->game->putMark(TicTacToe::O, 2, 1);
+        $this->game->putMark(TicTacToe::X, 3, 2);
 
         $this->assertGameIsFinished();
     }
@@ -84,8 +98,8 @@ class TicTacToeTest extends PHPUnit_Framework_TestCase {
      */
     public function isFinished_FirstColumnWithX_GameIsFinished()
     {
-        $this->game->putMark(TicTacToe::X, 1, 1);
-        $this->game->putMark(TicTacToe::X, 1, 2);
+        $this->game->putMark(TicTacToe::X, 1, 1); $this->game->putMark(TicTacToe::O, 2, 1);
+        $this->game->putMark(TicTacToe::X, 1, 2); $this->game->putMark(TicTacToe::O, 2, 2);
         $this->game->putMark(TicTacToe::X, 1, 3);
 
         $this->assertGameIsFinished();
@@ -96,19 +110,49 @@ class TicTacToeTest extends PHPUnit_Framework_TestCase {
      */
     public function isFinished_SecondColumnWithX_GameIsFinished()
     {
-        $this->game->putMark(TicTacToe::X, 2, 1);
-        $this->game->putMark(TicTacToe::X, 2, 2);
+        $this->game->putMark(TicTacToe::X, 2, 1); $this->game->putMark(TicTacToe::O, 3, 1);
+        $this->game->putMark(TicTacToe::X, 2, 2); $this->game->putMark(TicTacToe::O, 3, 2);
         $this->game->putMark(TicTacToe::X, 2, 3);
 
         $this->assertGameIsFinished();
     }
 
+    /**
+     * @test
+     */
+    public function putMark_PositionIsOccupied_ThrowsPositionIsNotEmptyException()
+    {
+        $this->game->putMark(TicTacToe::X, 1, 1);
+
+        $this->setExpectedException(PositionIsNotEmptyException::class);
+        $this->game->putMark(TicTacToe::O, 1, 1);
+    }
+
+    /**
+     * @test
+     */
+    public function putMark_SameMarkInARow_TurnOrderException()
+    {
+        $this->game->putMark(TicTacToe::X, 1, 1);
+
+        $this->setExpectedException(TurnOrderException::class);
+        $this->game->putMark(TicTacToe::X, 1, 1);
+    }
+
 
     private function drawGame()
     {
-        $this->game->putMark(TicTacToe::O, 1,1); $this->game->putMark(TicTacToe::X, 2,1); $this->game->putMark(TicTacToe::O, 3,1);
-        $this->game->putMark(TicTacToe::O, 1,2); $this->game->putMark(TicTacToe::X, 2,2); $this->game->putMark(TicTacToe::X, 3,2);
-        $this->game->putMark(TicTacToe::X, 1,3); $this->game->putMark(TicTacToe::O, 2,3); $this->game->putMark(TicTacToe::X, 3,3);
+        $this->game->putMark(TicTacToe::X, 1, 1);
+                                                  $this->game->putMark(TicTacToe::O, 2, 1);
+                                                                                            $this->game->putMark(TicTacToe::X, 3, 1);
+        //=============================================================================================================
+                                                  $this->game->putMark(TicTacToe::O, 2, 2);
+        $this->game->putMark(TicTacToe::X, 1, 2);
+                                                                                            $this->game->putMark(TicTacToe::O, 3, 2);
+        //=============================================================================================================
+                                                    $this->game->putMark(TicTacToe::X, 2, 3);
+        $this->game->putMark(TicTacToe::O, 1, 3);
+                                                                                            $this->game->putMark(TicTacToe::X, 3, 3);
     }
 
     private function assertGameNotFinished()
@@ -122,7 +166,8 @@ class TicTacToeTest extends PHPUnit_Framework_TestCase {
     }
 }
 
-class TicTacToe {
+class TicTacToe
+{
 
     const O = 'o';
     const X = 'x';
@@ -136,6 +181,7 @@ class TicTacToe {
         [self::NONE, self::NONE, self::NONE],
         [self::NONE, self::NONE, self::NONE],
     ];
+    private $prevMark;
 
     public function __construct()
     {
@@ -155,16 +201,25 @@ class TicTacToe {
         return false;
     }
 
+    /**
+     * @param $mark
+     * @param $posX
+     * @param $posY
+     * @throws PositionIsNotEmptyException
+     */
     public function putMark($mark, $posX, $posY)
     {
+        if ($this->prevMark == $mark) {
+            throw new TurnOrderException;
+        }
         $this->field->set($posX, $posY, $mark);
+        $this->prevMark = $mark;
     }
 
     public function getPositionStatus($posX, $posY)
     {
         return $this->field->get($posX, $posY);
     }
-
 
     /**
      * @return bool
@@ -175,6 +230,7 @@ class TicTacToe {
         for ($i = 1; $i <= $this->field->getRowCount(); $i++) {
             $result = $result || $this->areSetAndSame($this->field->getRow($i));
         }
+
         return $result;
     }
 
@@ -187,6 +243,7 @@ class TicTacToe {
         for ($i = 1; $i <= $this->field->getColumnCount(); $i++) {
             $result = $result || $this->areSetAndSame($this->field->getColumn($i));
         }
+
         return $result;
     }
 
@@ -251,8 +308,17 @@ class GameField
         return $this->field[$y][$x];
     }
 
+    /**
+     * @param $x
+     * @param $y
+     * @param $symbol
+     * @throws PositionIsNotEmptyException
+     */
     public function set($x, $y, $symbol)
     {
+        if ($this->field[$y][$x] !== self::NONE) {
+            throw new PositionIsNotEmptyException;
+        }
         $this->field[$y][$x] = $symbol;
     }
 
@@ -281,4 +347,13 @@ class GameField
     {
         return $this->columnCount;
     }
+}
+
+class PositionIsNotEmptyException extends Exception
+{
+}
+
+
+class TurnOrderException extends Exception
+{
 }
