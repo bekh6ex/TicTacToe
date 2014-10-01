@@ -27,7 +27,8 @@ class TicTacToeTest extends PHPUnit_Framework_TestCase
     {
         $this->game->putMark(TicTacToe::X, 1, 1);
 
-        $this->assertSame(TicTacToe::X, $this->game->getPositionStatus(1, 1));
+        $this->setExpectedException(PositionIsNotEmptyException::class);
+        $this->game->putMark(TicTacToe::O, 1, 1);
     }
 
     /**
@@ -170,8 +171,6 @@ class TicTacToeTest extends PHPUnit_Framework_TestCase
      */
     public function getWinner_DrawGame_ReturnsDRAW()
     {
-        $this->markTestIncomplete();
-
         $this->drawGame();
 
         $winner = $this->game->getWinner();
@@ -237,14 +236,11 @@ class TicTacToe
 
     public function isFinished()
     {
-        if ($this->winner !== null) {
+        if ($this->winnerIsSet()) {
             return true;
         }
 
-        $this->checkForWinnerInRows();
-        $this->checkForWinnerInColumns();
-        $this->checkForWinnerInDiagonals();
-        $this->checkForDrawGame();
+        $this->checkForWinner();
 
         return $this->winner !== null;
     }
@@ -265,11 +261,40 @@ class TicTacToe
         $this->previousMark = $mark;
     }
 
-    public function getPositionStatus($posX, $posY)
+    public function getWinner()
     {
-        return $this->field->get($posX, $posY);
+        if (!$this->winnerIsSet()) {
+            $this->checkForWinner();
+        }
+        return $this->winner;
     }
 
+    protected function checkForWinner()
+    {
+        if ($this->winnerIsSet()) {
+            return;
+        }
+
+        $this->checkForWinningCombinations();
+        $this->checkForDrawGame();
+    }
+
+    protected function checkForWinningCombinations()
+    {
+//        $combinationsCollection = [];
+
+        for ($y = 1; $y <= $this->field->getRowCount(); $y++) {
+            for ($x = 1; $x <= $this->field->getColumnCount(); $x++) {
+
+                foreach ($this->field->getPossibleCombinations($x, $y) as $marks) {
+                    if ($this->areSetAndSame($marks)) {
+                        $this->winner = current($marks);
+                        break;
+                    }
+                }
+            }
+        }
+    }
 
     /**
      * @param array $marks
@@ -288,64 +313,19 @@ class TicTacToe
         return $result;
     }
 
-    /**
-     * @return void
-     */
-    private function checkForWinnerInRows()
-    {
-        if ($this->winner !== null) {
-            return;
-        }
-
-        for ($i = 1; $i <= $this->field->getRowCount(); $i++) {
-            $marks = $this->field->getRow($i);
-            if ($this->areSetAndSame($marks)) {
-                $this->winner = current($marks);
-            }
-        }
-    }
-
-    private function checkForWinnerInColumns()
-    {
-        if ($this->winner !== null) {
-            return;
-        }
-
-        for ($i = 1; $i <= $this->field->getColumnCount(); $i++) {
-            $marks = $this->field->getColumn($i);
-            if ($this->areSetAndSame($marks)) {
-                $this->winner = current($marks);
-            }
-        }
-    }
-
-    private function checkForWinnerInDiagonals()
-    {
-        if ($this->winner !== null) {
-            return;
-        }
-
-        $diagonals =[
-            $this->field->getDiagonal1(),
-            $this->field->getDiagonal2(),
-        ];
-
-        foreach ($diagonals as $marks) {
-            if ($this->areSetAndSame($marks)) {
-                $this->winner = current($marks);
-            }
-        }
-    }
-
     private function checkForDrawGame()
     {
-        if ($this->winner !== null) {
-            return;
-        }
-
         if ($this->field->fieldIsFull()) {
             $this->winner = self::DRAW;
         }
+    }
+
+    /**
+     * @return bool
+     */
+    private function winnerIsSet()
+    {
+        return $this->winner !== null;
     }
 }
 
@@ -385,9 +365,26 @@ class GameField
         return !$hasEmptyPosition;
     }
 
-    public function get($x, $y)
+    public function getPossibleCombinations($x, $y)
     {
-        return $this->field[$y][$x];
+        $combinations = [];
+        if ($this->canGetRowCombinationForPosition($x,$y)) {
+            $combinations[] = $this->getRow($y);
+        }
+
+        if ($this->canGetColumnCombinationForPosition($x,$y)) {
+            $combinations[] = $this->getColumn($x);
+        }
+
+        if ($this->canGetDownwardDiagonalCombinationForPosition($x,$y)) {
+            $combinations[] = $this->getDownwardDiagonal();
+        }
+
+        if ($this->canGetUpwardDiagonalCombinationForPosition($x,$y)) {
+            $combinations[] = $this->getUpwardDiagonal();
+        }
+
+        return $combinations;
     }
 
     /**
@@ -404,17 +401,17 @@ class GameField
         $this->field[$y][$x] = $symbol;
     }
 
-    public function getRow($y)
+    private function getRow($y)
     {
         return array_values($this->field[$y]);
     }
 
-    public function getColumn($x)
+    private function getColumn($x)
     {
         return array_values(array_column($this->field, $x));
     }
 
-    public function getDiagonal1()
+    private function getDownwardDiagonal()
     {
         return [
             $this->field[1][1],
@@ -423,7 +420,7 @@ class GameField
         ];
     }
 
-    public function getDiagonal2()
+    private function getUpwardDiagonal()
     {
         return [
             $this->field[1][3],
@@ -448,6 +445,26 @@ class GameField
     public function getColumnCount()
     {
         return $this->columnCount;
+    }
+
+    private function canGetRowCombinationForPosition($x, $y)
+    {
+        return $x == 1;
+    }
+
+    private function canGetColumnCombinationForPosition($x, $y)
+    {
+        return $y == 1;
+    }
+
+    private function canGetUpwardDiagonalCombinationForPosition($x, $y)
+    {
+        return $x == 1 && $y == 3;
+    }
+
+    private function canGetDownwardDiagonalCombinationForPosition($x, $y)
+    {
+        return $x == 1 && $y == 1;
     }
 }
 
