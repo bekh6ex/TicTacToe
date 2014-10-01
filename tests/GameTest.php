@@ -4,9 +4,9 @@ use TicTacToe\Exception\PositionIsNotEmptyException;
 use TicTacToe\Exception\TurnOrderException;
 use TicTacToe\Game;
 
-require 'vendor/autoload.php';
+require '../vendor/autoload.php';
 
-class TicTacToeTest extends PHPUnit_Framework_TestCase
+class GameTest extends PHPUnit_Framework_TestCase
 {
     /**
      * @var Game
