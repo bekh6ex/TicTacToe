@@ -50,6 +50,7 @@ function writeLine($string = '') {
 
 $playerMap = [0 => Game::X, 1 => Game::O];
 
+
 $game = new Game();
 
 writeLine('Controls:');
@@ -72,6 +73,7 @@ while (!$game->isFinished()) {
         }
         list($x, $y) = $controlMap[$keyPressed];
         try {
+            $player->makeMove($game);
             $game->putMark($playerMark, $x, $y);
             break;
         } catch (PositionIsNotEmptyException $e) {

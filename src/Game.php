@@ -21,9 +21,29 @@ class Game
 
     private $winner = null;
 
-    public function __construct()
+    private function __construct()
     {
         $this->field = new Field();
+    }
+
+    public static function newGame()
+    {
+        $game = new self;
+        $game->field = new Field();
+        return $game;
+    }
+
+    /**
+     * @param GameImage $gameImage
+     * @return Game
+     */
+    public static function load(GameImage $gameImage)
+    {
+        $game = new self;
+        $game->field = $gameImage->getField();
+        $game->previousMark = $gameImage->getPreviousMark();
+
+        return $game;
     }
 
     public function isFinished()
@@ -65,6 +85,14 @@ class Game
     public function getFieldAsArray()
     {
         return $this->field->toArray();
+    }
+
+    /**
+     * @return GameImage
+     */
+    public function save(GameImageGenerator $generator)
+    {
+        return $generator->generateImage($this->field, $this->previousMark);
     }
 
     protected function checkForWinner()

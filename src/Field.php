@@ -25,6 +25,14 @@ class Field
         }
     }
 
+    public static function createFromArray(array $fieldArray)
+    {
+        $field = new self;
+        $field->field = $fieldArray;
+
+        return $field;
+    }
+
     /**
      * @return bool
      */

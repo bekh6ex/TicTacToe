@@ -1,10 +1,9 @@
 <?php
 
+use TicTacToe\AsciiGameImageGenerator;
 use TicTacToe\Exception\PositionIsNotEmptyException;
 use TicTacToe\Exception\TurnOrderException;
 use TicTacToe\Game;
-
-require '../vendor/autoload.php';
 
 class GameTest extends PHPUnit_Framework_TestCase
 {
@@ -15,7 +14,7 @@ class GameTest extends PHPUnit_Framework_TestCase
 
     protected function setUp()
     {
-        $this->game = new Game();
+        $this->game = Game::newGame();
     }
 
     /**
@@ -182,6 +181,33 @@ class GameTest extends PHPUnit_Framework_TestCase
         $winner = $this->game->getWinner();
 
         $this->assertEquals(Game::DRAW, $winner);
+    }
+
+    /**
+     * @test
+     */
+    public function save_NewGame_ShouldBeEqual()
+    {
+        $newGame = Game::newGame();
+        $savedGame = $newGame->save(new AsciiGameImageGenerator());
+
+        $loadedGame = Game::load($savedGame);
+
+        $this->assertEquals($newGame, $loadedGame);
+    }
+
+    /**
+     * @test
+     */
+    public function save_Given_Should()
+    {
+        $game = Game::newGame();
+        $game->putMark(Game::X, 1, 1);
+        $savedGame = $game->save(new AsciiGameImageGenerator());
+
+        $loadedGame = Game::load($savedGame);
+
+        $this->assertEquals($game, $loadedGame);
     }
 
     /**
